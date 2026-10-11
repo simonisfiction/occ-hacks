@@ -1,5 +1,6 @@
 
 #include "prompt.h"
+#include <QDateTime>
 
 // Constructor for a new prompt
 Prompt::Prompt(const std::string& prompt,
@@ -7,7 +8,8 @@ Prompt::Prompt(const std::string& prompt,
     : prompt(prompt),
     answer(answer),
     level(1),
-    id(-1)
+    id(-1),
+    nextDue(QDateTime::currentMSecsSinceEpoch())
 {
 }
 
@@ -15,11 +17,12 @@ Prompt::Prompt(const std::string& prompt,
 Prompt::Prompt(const std::string& prompt,
                const std::string& answer,
                int level,
-               int id)
+               int id, qint64 nextDue)
     : prompt(prompt),
     answer(answer),
     level(level),
-    id(id)
+    id(id),
+    nextDue(nextDue)
 {
 }
 
@@ -31,6 +34,12 @@ int Prompt::getId() const
 int Prompt::getLevel() const
 {
     return level;
+}
+
+
+qint64 Prompt::getNextDue() const
+{
+    return nextDue;
 }
 
 const std::string& Prompt::getPrompt() const

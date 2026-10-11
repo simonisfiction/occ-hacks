@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QUuid>
+#include <QDateTime>
 
 // Constructor
 Database::Database()
@@ -47,7 +48,7 @@ bool Database::open()
     }
 
     db.setDatabaseName(dataDir + "/database.db");
-
+    qDebug() << "Database location:" << db.databaseName();
     if (!db.open()) {
         qWarning() << "Database open failed:"
                    << db.lastError().text();
@@ -73,9 +74,10 @@ bool Database::createTables()
     QString sql = R"(
         CREATE TABLE IF NOT EXISTS prompts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            level INTEGER NOT NULL,
+            level INTEGER NOT NULL DEFAuLT 1,
             prompt TEXT NOT NULL,
-            answer TEXT NOT NULL
+            answer TEXT NOT NULL,
+            next_due INTEGER NOT NULL
         )
     )";
 
@@ -94,21 +96,19 @@ bool Database::addPrompt(const Prompt& prompt)
     QSqlQuery query(db);
 
     query.prepare(
-        "INSERT INTO prompts (level, prompt, answer) "
-        "VALUES (:level, :prompt, :answer)"
+        "INSERT INTO prompts (level, prompt, answer, next_due) "
+        "VALUES (:level, :prompt, :answer, :next_due)"
         );
 
     query.bindValue(":level", prompt.getLevel());
-    query.bindValue(
-        ":prompt",
-        QString::fromStdString(prompt.getPrompt()));
-    query.bindValue(
-        ":answer",
-        QString::fromStdString(prompt.getAnswer()));
+    query.bindValue(":prompt",
+                    QString::fromStdString(prompt.getPrompt()));
+    query.bindValue(":answer",
+                    QString::fromStdString(prompt.getAnswer()));
+    query.bindValue(":next_due", prompt.getNextDue());
 
     if (!query.exec()) {
-        qWarning() << "Insert failed:"
-                   << query.lastError().text();
+        qWarning() << "Insert failed:" << query.lastError().text();
         return false;
     }
 
@@ -122,22 +122,21 @@ bool Database::updatePrompt(const Prompt& prompt)
 
     query.prepare(
         "UPDATE prompts "
-        "SET level = :level, prompt = :prompt, answer = :answer "
+        "SET level = :level, prompt = :prompt, "
+        "answer = :answer, next_due = :next_due "
         "WHERE id = :id"
         );
 
     query.bindValue(":id", prompt.getId());
     query.bindValue(":level", prompt.getLevel());
-    query.bindValue(
-        ":prompt",
-        QString::fromStdString(prompt.getPrompt()));
-    query.bindValue(
-        ":answer",
-        QString::fromStdString(prompt.getAnswer()));
+    query.bindValue(":prompt",
+                    QString::fromStdString(prompt.getPrompt()));
+    query.bindValue(":answer",
+                    QString::fromStdString(prompt.getAnswer()));
+    query.bindValue(":next_due", prompt.getNextDue());
 
     if (!query.exec()) {
-        qWarning() << "Update failed:"
-                   << query.lastError().text();
+        qWarning() << "Update failed:" << query.lastError().text();
         return false;
     }
 
@@ -169,7 +168,7 @@ Prompt Database::getPrompt(int id)
     QSqlQuery query(db);
 
     query.prepare(
-        "SELECT id, level, prompt, answer "
+        "SELECT id, level, prompt, answer, next_due "
         "FROM prompts WHERE id = :id");
 
     query.bindValue(":id", id);
@@ -189,7 +188,8 @@ Prompt Database::getPrompt(int id)
         query.value("prompt").toString().toStdString(),
         query.value("answer").toString().toStdString(),
         query.value("level").toInt(),
-        query.value("id").toInt()
+        query.value("id").toInt(),
+        query.value("next_due").toLongLong()
         );
 }
 
@@ -200,7 +200,7 @@ QList<Prompt> Database::getAllPrompts()
     QSqlQuery query(db);
 
     if (!query.exec(
-            "SELECT id, level, prompt, answer FROM prompts")) {
+            "SELECT id, level, prompt, answer, next_due FROM prompts")) {
         qWarning() << "Select all failed:"
                    << query.lastError().text();
         return prompts;
@@ -211,7 +211,8 @@ QList<Prompt> Database::getAllPrompts()
             query.value("prompt").toString().toStdString(),
             query.value("answer").toString().toStdString(),
             query.value("level").toInt(),
-            query.value("id").toInt()
+            query.value("id").toInt(),
+            query.value("next_due").toLongLong()
             ));
     }
 

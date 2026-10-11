@@ -1,7 +1,13 @@
 #ifndef POPUP_H
 #define POPUP_H
 
+#include <QDialog>
 #include <QMainWindow>
+#include <QKeySequence>
+#include <QKeyEvent>
+#include <QLabel>
+#include <QPushButton>
+
 #include "prompt.h"
 
 namespace Ui {

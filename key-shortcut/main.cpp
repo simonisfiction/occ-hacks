@@ -1,10 +1,13 @@
 #include <QApplication>
-#include "popup.h"
-#include "prompt.h"
-#include "database.h"
 #include <QDebug>
 #include <QString>
 #include <QList>
+#include <QtCore/qdatetime.h>
+
+#include "popup.h"
+#include "prompt.h"
+#include "database.h"
+#include "promptscheduler.h"
 
 
 
@@ -26,14 +29,58 @@ int main(int argc, char *argv[])
         Prompt p3("Cut selected text", "Ctrl+X");
         Prompt p4("Undo the last action", "Ctrl+Z");
         Prompt p5("Save the current document", "Ctrl+S");
-        db.addPrompt(p1);
-        db.addPrompt(p2);
-        db.addPrompt(p3);
-        db.addPrompt(p4);
-        db.addPrompt(p5);
+        if (db.addPrompt(p1)) {
+            qDebug() << "Prompt inserted successfully!";
+        } else {
+            qWarning() << "Failed to insert prompt!";
+        }
+        if (db.addPrompt(p2)) {
+            qDebug() << "Prompt inserted successfully!";
+        } else {
+            qWarning() << "Failed to insert prompt!";
+        }
+        if (db.addPrompt(p3)) {
+            qDebug() << "Prompt inserted successfully!";
+        } else {
+            qWarning() << "Failed to insert prompt!";
+        }
+        if (db.addPrompt(p4)) {
+            qDebug() << "Prompt inserted successfully!";
+        } else {
+            qWarning() << "Failed to insert prompt!";
+        }
+        if (db.addPrompt(p5)) {
+            qDebug() << "Prompt inserted successfully!";
+        } else {
+            qWarning() << "Failed to insert prompt!";
+        }
 
         qDebug() << "Inserted sample prompts.";
 
+    }
+
+
+    // After db.open() succeeds:
+    PromptScheduler scheduler(db);
+
+    auto next = scheduler.takeNextDuePrompt();
+
+    if (next.has_value()) {
+        qDebug() << "Due prompt:"
+                 << QString::fromStdString(next->getPrompt());
+
+        qDebug() << "Current level:" << next->getLevel();
+
+        if (scheduler.markCorrect(next->getId())) {
+            qDebug() << "Correct answer recorded!";
+        }
+
+        Prompt updated = db.getPrompt(next->getId());
+
+        qDebug() << "New level:" << updated.getLevel();
+        qDebug() << "Next due:"
+                 << QDateTime::fromMSecsSinceEpoch(
+                        updated.getNextDue()).toString();
     }
 
     // proving that the prompts are in the database

@@ -1,158 +1,140 @@
 #include "promptscheduler.h"
 
+#include <QDateTime>
+#include <algorithm>
 #include <cmath>
 
-// Construct the scheduler and load the prompts.
 PromptScheduler::PromptScheduler(Database& database)
     : database(database)
 {
-    reload();
 }
 
-// Load all prompts from the database.
-// Every prompt is initially eligible to appear.
-void PromptScheduler::reload()
-{
-    scheduledPrompts.clear();
-
-    const auto prompts = database.getAllPrompts();
-    const auto now = Clock::now();
-
-    for (const Prompt& prompt : prompts) {
-        scheduledPrompts.append(
-            ScheduledPrompt{prompt, now, false}
-            );
-    }
-}
-
-// Calculate the interval in seconds: e^level.
-PromptScheduler::Clock::duration
-PromptScheduler::intervalForLevel(int level)
-{
-    const double seconds = std::exp(
-        static_cast<double>(level)
-        );
-
-    return std::chrono::duration_cast<Clock::duration>(
-        std::chrono::duration<double>(seconds)
-        );
-}
-
-// Get the earliest prompt that is due.
 std::optional<Prompt> PromptScheduler::takeNextDuePrompt()
 {
-    const auto now = Clock::now();
-
-    ScheduledPrompt* next = nullptr;
-
-    for (ScheduledPrompt& scheduled : scheduledPrompts) {
-        if (scheduled.awaitingAnswer ||
-            scheduled.nextDue > now) {
-            continue;
-        }
-
-        if (next == nullptr ||
-            scheduled.nextDue < next->nextDue) {
-            next = &scheduled;
-        }
-    }
-
-    if (next == nullptr) {
+    // Prevent two simultaneous popups.
+    if (activePromptId.has_value()) {
         return std::nullopt;
     }
 
-    // Don't return this same prompt again while it awaits an answer.
-    next->awaitingAnswer = true;
+    qint64 now = QDateTime::currentMSecsSinceEpoch();
+    QList<Prompt> prompts = database.getAllPrompts();
 
-    return next->prompt;
+    std::optional<Prompt> earliest;
+
+    for (const Prompt& prompt : prompts) {
+        if (prompt.getNextDue() > now) {
+            continue;
+        }
+
+        if (!earliest.has_value() ||
+            prompt.getNextDue() < earliest->getNextDue() ||
+            (prompt.getNextDue() == earliest->getNextDue() &&
+             prompt.getId() < earliest->getId())) {
+            earliest = prompt;
+        }
+    }
+
+    if (earliest.has_value()) {
+        activePromptId = earliest->getId();
+    }
+
+    return earliest;
 }
 
-// Increase the level after a correct answer and save it.
 bool PromptScheduler::markCorrect(int id)
 {
-    for (ScheduledPrompt& scheduled : scheduledPrompts) {
-        if (scheduled.prompt.getId() != id) {
-            continue;
-        }
-
-        if (!scheduled.awaitingAnswer) {
-            return false;
-        }
-
-        Prompt updated(
-            scheduled.prompt.getPrompt(),
-            scheduled.prompt.getAnswer(),
-            scheduled.prompt.getLevel() + 1,
-            scheduled.prompt.getId()
-            );
-
-        if (!database.updatePrompt(updated)) {
-            return false;
-        }
-
-        scheduled.prompt = updated;
-        scheduled.nextDue =
-            Clock::now() + intervalForLevel(updated.getLevel());
-        scheduled.awaitingAnswer = false;
-
-        return true;
+    if (!activePromptId.has_value() ||
+        *activePromptId != id) {
+        return false;
     }
 
-    return false;
+    Prompt old = database.getPrompt(id);
+
+    if (old.getId() != id) {
+        return false;
+    }
+
+    int newLevel = old.getLevel() + 1;
+
+    // Cap the level to prevent exponential overflow.
+    newLevel = std::min(newLevel, 20);
+
+    qint64 intervalMs =
+        static_cast<qint64>(std::exp(newLevel) * 1000.0);
+
+    qint64 nextDue =
+        QDateTime::currentMSecsSinceEpoch() + intervalMs;
+
+    Prompt updated(
+        old.getPrompt(),
+        old.getAnswer(),
+        newLevel,
+        old.getId(),
+        nextDue
+        );
+
+    if (!database.updatePrompt(updated)) {
+        return false;
+    }
+
+    activePromptId.reset();
+    return true;
 }
 
-// Retry an incorrect prompt after one second.
-// Its level does not change.
 bool PromptScheduler::markIncorrect(int id)
 {
-    for (ScheduledPrompt& scheduled : scheduledPrompts) {
-        if (scheduled.prompt.getId() != id) {
-            continue;
-        }
-
-        if (!scheduled.awaitingAnswer) {
-            return false;
-        }
-
-        scheduled.nextDue =
-            Clock::now() + std::chrono::seconds(1);
-        scheduled.awaitingAnswer = false;
-
-        return true;
+    if (!activePromptId.has_value() ||
+        *activePromptId != id) {
+        return false;
     }
 
-    return false;
+    Prompt old = database.getPrompt(id);
+
+    if (old.getId() != id) {
+        return false;
+    }
+
+    qint64 nextDue =
+        QDateTime::currentMSecsSinceEpoch() + 1000;
+
+    Prompt updated(
+        old.getPrompt(),
+        old.getAnswer(),
+        old.getLevel(),
+        old.getId(),
+        nextDue
+        );
+
+    if (!database.updatePrompt(updated)) {
+        return false;
+    }
+
+    activePromptId.reset();
+    return true;
 }
 
-// Calculate how long until the next prompt can appear.
 std::chrono::milliseconds
 PromptScheduler::timeUntilNextPrompt() const
 {
-    const auto now = Clock::now();
-
-    bool found = false;
-    Clock::time_point earliest;
-
-    for (const ScheduledPrompt& scheduled : scheduledPrompts) {
-        if (scheduled.awaitingAnswer) {
-            continue;
-        }
-
-        if (!found || scheduled.nextDue < earliest) {
-            earliest = scheduled.nextDue;
-            found = true;
-        }
-    }
-
-    if (!found) {
+    if (activePromptId.has_value()) {
         return std::chrono::milliseconds::max();
     }
 
-    if (earliest <= now) {
-        return std::chrono::milliseconds::zero();
+    QList<Prompt> prompts = database.getAllPrompts();
+
+    if (prompts.isEmpty()) {
+        return std::chrono::milliseconds::max();
     }
 
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-        earliest - now
+    qint64 earliest = prompts.first().getNextDue();
+
+    for (const Prompt& prompt : prompts) {
+        earliest = std::min(earliest, prompt.getNextDue());
+    }
+
+    qint64 now = QDateTime::currentMSecsSinceEpoch();
+
+    return std::chrono::milliseconds(
+        std::max(qint64(0), earliest - now)
         );
 }
