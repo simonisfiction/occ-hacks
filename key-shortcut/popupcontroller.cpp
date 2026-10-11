@@ -24,7 +24,10 @@ void PopupController::start()
 {
     timer.start(0);
 }
-
+void PopupController::stop()
+{
+    timer.stop();
+}
 void PopupController::checkForPrompt()
 {
     if (popup.isVisible()) {

@@ -17,6 +17,7 @@ public:
         QObject* parent = nullptr);
 
     void start();
+    void stop();
 
 private:
     PromptScheduler& scheduler;

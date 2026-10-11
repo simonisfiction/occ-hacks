@@ -5,10 +5,11 @@
 #include <QMenu>
 #include <QMessageBox>
 
-MainWindow::MainWindow(PromptScheduler& scheduler, QWidget *parent)
+MainWindow::MainWindow(PromptScheduler& scheduler, PopupController& controller, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , scheduler(scheduler)
+    , controller(controller)
 {
     ui->setupUi(this);
     setWindowTitle("Space Cards");
@@ -27,6 +28,21 @@ MainWindow::MainWindow(PromptScheduler& scheduler, QWidget *parent)
     loadPrompts();
 }
 
+void MainWindow::on_btnStart_clicked()
+{
+    if (!isRunning) {
+        // Start the background loop
+        controller.start();
+        isRunning = true;
+        ui->btnStart->setText("Stop Prompts"); // Toggle button label
+    } else {
+        // Stop the background loop
+        controller.stop();
+        isRunning = false;
+        ui->btnStart->setText("Start Prompts");
+    }
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -41,7 +57,7 @@ void MainWindow::loadPrompts()
     for (const Prompt &p : prompts) {
         // Display string format in the list widget
         QString displayText = QString::fromStdString(p.getPrompt()) +
-                              " (Ans: " + QString::fromStdString(p.getAnswer()) + ")";
+                              " (Answer: " + QString::fromStdString(p.getAnswer()) + ")";
 
         QListWidgetItem *item = new QListWidgetItem(displayText, ui->promptList);
 

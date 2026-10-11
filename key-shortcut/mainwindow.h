@@ -4,8 +4,12 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QPoint>
+#include <QMessageBox>
+#include <QPointer>
+
 #include "database.h"
 #include "promptscheduler.h"
+#include "popupcontroller.h" // Add header
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,7 +20,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(PromptScheduler& scheduler, QWidget *parent = nullptr);
+    // Pass PopupController reference into constructor
+    explicit MainWindow(PromptScheduler& scheduler, PopupController& controller, QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -24,11 +29,14 @@ private slots:
     void showContextMenu(const QPoint &pos);
     void deleteSelectedPrompt();
     void on_btnTerminate_clicked();
+    void on_btnStart_clicked(); // Slot for the Start button
 
 private:
     Ui::MainWindow *ui;
     Database db;
     PromptScheduler& scheduler;
+    PopupController& controller; // Reference to PopupController
+    bool isRunning = false;       // Track scheduler status
 
     void loadPrompts();
 };

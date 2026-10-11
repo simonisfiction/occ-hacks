@@ -45,10 +45,10 @@ int main(int argc, char *argv[])
     // Initialize and start scheduled popups
     PromptScheduler scheduler(db);
     PopupController controller(scheduler);
-    controller.start();
+    // controller.start();
 
     // Show Admin Panel on application launch
-    MainWindow mainWindow(scheduler);
+    MainWindow mainWindow(scheduler, controller);
     mainWindow.show();
 
     return app.exec();
