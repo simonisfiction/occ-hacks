@@ -1,37 +1,65 @@
-
 #include "popup.h"
+#include "ui_mainwindow.h"
 
-#include <QVBoxLayout>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTimer>
 #include <QString>
+#include <Qt>
 
 Popup::Popup(const Prompt& prompt, QWidget* parent)
-    : QDialog(parent),
-    length(400),
-    width(200),
-    prompt(prompt)
+    : QMainWindow(parent),
+    prompt(prompt),
+    ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
+
+    setWindowFlags(Qt::Dialog);
     setWindowTitle("Prompt");
-    resize(length, width);
 
-    questionLabel = new QLabel(
-        QString::fromStdString(prompt.getQuestion()), this);
+    ui->promptLabel->setText(
+        QString::fromStdString(prompt.getQuestion()));
 
-    answerLabel = new QLabel(this);
-    answerLabel->setText(
-        QString::fromStdString(prompt.getAnswer()));
-    answerLabel->hide();
+    ui->feedbackLabel->clear();
+    ui->answerLineEdit->setFocus();
 
-    answerButton = new QPushButton("Show Answer", this);
+    connect(ui->answerLineEdit,
+            &QLineEdit::returnPressed,
+            this,
+            &Popup::checkAnswer);
+}
 
-    QVBoxLayout* layout = new QVBoxLayout(this);
-    layout->addWidget(questionLabel);
-    layout->addWidget(answerLabel);
-    layout->addWidget(answerButton);
+Popup::~Popup()
+{
+    delete ui;
+}
 
-    connect(answerButton, &QPushButton::clicked,
-            this, [this]() {
-                answerLabel->show();
-                answerButton->hide();
-            });
+void Popup::checkAnswer()
+{
+    QString userAnswer =
+        ui->answerLineEdit->text().trimmed();
+
+    QString correctAnswer =
+        QString::fromStdString(prompt.getAnswer()).trimmed();
+
+    ui->answerLineEdit->setDisabled(true);
+
+    if (userAnswer.compare(
+            correctAnswer, Qt::CaseInsensitive) == 0)
+    {
+        ui->feedbackLabel->setText("Correct!");
+
+        QTimer::singleShot(
+            1000, this, &QWidget::close);
+    }
+    else
+    {
+        ui->feedbackLabel->setText(
+            "Incorrect! The correct answer is: "
+            + correctAnswer);
+
+        QTimer::singleShot(
+            10000, this, &QWidget::close);
+    }
 }
 

@@ -1,27 +1,29 @@
 #ifndef POPUP_H
 #define POPUP_H
 
-#include <QDialog>
-#include <QLabel>
-#include <QPushButton>
+#include <QMainWindow>
 #include "prompt.h"
 
-class Popup : public QDialog
+namespace Ui {
+class MainWindow;
+}
+
+class Popup : public QMainWindow
 {
     Q_OBJECT
 
 private:
-    int length;
-    int width;
     Prompt prompt;
+    Ui::MainWindow *ui;
 
-    QLabel* questionLabel;
-    QLabel* answerLabel;
-    QPushButton* answerButton;
+private slots:
+    void checkAnswer();
 
 public:
     explicit Popup(const Prompt& prompt,
                    QWidget* parent = nullptr);
+
+    ~Popup();
 };
 
 #endif // POPUP_H

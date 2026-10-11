@@ -1,16 +1,19 @@
-#include "mainwindow.h"
 #include <QApplication>
 #include "popup.h"
+#include "prompt.h"
 
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    Prompt prompt("What is the capital of France?", "Paris");
+    Prompt testPrompt(
+        "What is the capital of France?",
+        "Paris"
+        );
 
-    Popup popup(prompt);
-    popup.exec();
+    Popup popup(testPrompt);
+    popup.show();
 
     return app.exec();
 }

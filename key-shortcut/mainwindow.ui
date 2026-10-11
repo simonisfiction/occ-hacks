@@ -14,43 +14,40 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="newpromptLabel">
+   <widget class="QLabel" name="promptLabel">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>30</y>
+      <x>160</x>
+      <y>20</y>
       <width>321</width>
       <height>91</height>
      </rect>
     </property>
     <property name="text">
-     <string>Would you like to add new Prompts?</string>
+     <string>Prompt</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="yesButton">
+   <widget class="QLineEdit" name="answerLineEdit">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>200</y>
-      <width>93</width>
-      <height>29</height>
+      <x>160</x>
+      <y>140</y>
+      <width>311</width>
+      <height>41</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="feedbackLabel">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>190</y>
+      <width>271</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>Yes</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="noButton">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>200</y>
-      <width>93</width>
-      <height>29</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>No</string>
+     <string>Correct</string>
     </property>
    </widget>
   </widget>

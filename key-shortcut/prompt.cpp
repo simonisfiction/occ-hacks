@@ -2,7 +2,8 @@
 
 Prompt::Prompt(const std::string& question,
                const std::string& answer)
-    : question(question), answer(answer)
+    : question(question),
+    answer(answer)
 {
 }
 
