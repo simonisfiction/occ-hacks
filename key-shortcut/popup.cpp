@@ -12,7 +12,7 @@ Popup::Popup(const Prompt& prompt, QWidget* parent)
 {
     ui->setupUi(this);
 
-    setWindowTitle("Keyboard Shortcut Practice");
+    setWindowTitle("Space Cards");
     setWindowFlag(Qt::WindowStaysOnTopHint);
 
     connect(ui->answerLineEdit,
@@ -78,6 +78,14 @@ void Popup::checkAnswer()
     });
 }
 
+void Popup::on_btnSubmitPopup_clicked()
+{
+    this->checkAnswer();
+
+
+}
+
+
 void Popup::closeEvent(QCloseEvent* event)
 {
     if (!answerSubmitted) {
@@ -86,4 +94,8 @@ void Popup::closeEvent(QCloseEvent* event)
     }
 
     QMainWindow::closeEvent(event);
+}
+void Popup::on_btnTerminatePopup_clicked()
+{
+    QApplication::quit();
 }

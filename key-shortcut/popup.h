@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "prompt.h"
 
+
 namespace Ui {
 class PopupWindow;
 }
@@ -27,6 +28,9 @@ protected:
 
 private slots:
     void checkAnswer();
+    void on_btnTerminatePopup_clicked();
+    void on_btnSubmitPopup_clicked();
+
 
 private:
     Prompt prompt;
