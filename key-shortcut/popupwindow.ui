@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Prompt</string>
+     <string>promptLabel</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="answerLineEdit">
@@ -35,6 +35,9 @@
       <width>311</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="feedbackLabel">
@@ -47,7 +50,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Correct</string>
+     <string>feedbackLabel</string>
     </property>
    </widget>
   </widget>

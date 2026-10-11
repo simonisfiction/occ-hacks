@@ -2,12 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
+#include <QListWidgetItem>
+#include <QPoint>
+#include "database.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
-}
+namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -16,10 +16,18 @@ class MainWindow : public QMainWindow
 
 public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow() override;
+    ~MainWindow();
+
+private slots:
+    void on_btnAdd_clicked();
+    void showContextMenu(const QPoint &pos);
+    void deleteSelectedPrompt();
 
 private:
     Ui::MainWindow *ui;
+    Database db;
 
+    void loadPrompts();
 };
+
 #endif // MAINWINDOW_H
