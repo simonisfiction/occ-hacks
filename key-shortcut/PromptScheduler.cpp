@@ -93,14 +93,23 @@ bool PromptScheduler::markIncorrect(int id)
     if (old.getId() != id) {
         return false;
     }
+    int newLevel = old.getLevel();
+    if(old.getLevel() > 1)
+    {
+        newLevel = newLevel - 1;
+    }
+
+    newLevel = std::min(newLevel, 20);
+    qint64 intervalMs =
+        static_cast<qint64>(std::exp(newLevel) * 1000.0);
 
     qint64 nextDue =
-        QDateTime::currentMSecsSinceEpoch() + 1000;
+        QDateTime::currentMSecsSinceEpoch() + intervalMs;
 
     Prompt updated(
         old.getPrompt(),
         old.getAnswer(),
-        old.getLevel(),
+        newLevel,
         old.getId(),
         nextDue
         );
