@@ -24,7 +24,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(key-shortcut
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        database-manager.h
+
         popup.h
         popup.cpp
         prompt.h

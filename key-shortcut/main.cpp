@@ -25,19 +25,16 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // Insert sample prompts if DB is brand new
+    //Insert sample prompts if DB is brand new
     if (db.getAllPrompts().isEmpty()) {
-        Prompt p1("Copy selected text", "Ctrl+C");
-        Prompt p2("Paste copied text", "Ctrl+V");
-        Prompt p3("Cut selected text", "Ctrl+X");
-        Prompt p4("Undo the last action", "Ctrl+Z");
-        Prompt p5("Save the current document", "Ctrl+S");
+        Prompt p1("what is letter a", "a");
+        Prompt p2("what is letter b", "b");
+        Prompt p3("what is letter c", "c");
 
         db.addPrompt(p1);
         db.addPrompt(p2);
         db.addPrompt(p3);
-        db.addPrompt(p4);
-        db.addPrompt(p5);
+
 
         qDebug() << "Inserted sample prompts.";
     }
