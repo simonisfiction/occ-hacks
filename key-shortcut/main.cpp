@@ -8,12 +8,14 @@
 #include "prompt.h"
 #include "database.h"
 #include "promptscheduler.h"
+#include "popupcontroller.h"
 
 
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    app.setQuitOnLastWindowClosed(false);
 
     //instantiate the database object
     Database db;
@@ -63,44 +65,48 @@ int main(int argc, char *argv[])
     // After db.open() succeeds:
     PromptScheduler scheduler(db);
 
-    auto next = scheduler.takeNextDuePrompt();
+    PopupController controller(scheduler);
+    controller.start();
 
-    if (next.has_value()) {
-        qDebug() << "Due prompt:"
-                 << QString::fromStdString(next->getPrompt());
 
-        qDebug() << "Current level:" << next->getLevel();
+    // auto next = scheduler.takeNextDuePrompt();
 
-        if (scheduler.markCorrect(next->getId())) {
-            qDebug() << "Correct answer recorded!";
-        }
+    // if (next.has_value()) {
+    //     qDebug() << "Due prompt:"
+    //              << QString::fromStdString(next->getPrompt());
 
-        Prompt updated = db.getPrompt(next->getId());
+    //     qDebug() << "Current level:" << next->getLevel();
 
-        qDebug() << "New level:" << updated.getLevel();
-        qDebug() << "Next due:"
-                 << QDateTime::fromMSecsSinceEpoch(
-                        updated.getNextDue()).toString();
-    }
+    //     if (scheduler.markCorrect(next->getId())) {
+    //         qDebug() << "Correct answer recorded!";
+    //     }
 
-    // proving that the prompts are in the database
-    qDebug() << "Total prompts:" << db.getAllPrompts().size();
-    QList<Prompt> prompts = db.getAllPrompts();
+    //     Prompt updated = db.getPrompt(next->getId());
 
-    for (const Prompt& p : prompts) {
-        qDebug() << "ID:" << p.getId()
-        << "| Level:" << p.getLevel()
-        << "| Prompt:" << QString::fromStdString(p.getPrompt())
-        << "| Answer:" << QString::fromStdString(p.getAnswer());
-    }
+    //     qDebug() << "New level:" << updated.getLevel();
+    //     qDebug() << "Next due:"
+    //              << QDateTime::fromMSecsSinceEpoch(
+    //                     updated.getNextDue()).toString();
+    // }
 
-    Prompt testPrompt(
-        "What is the capital of France?",
-        "Paris"
-        );
+    // // proving that the prompts are in the database
+    // qDebug() << "Total prompts:" << db.getAllPrompts().size();
+    // QList<Prompt> prompts = db.getAllPrompts();
 
-    Popup popup(testPrompt);
-    popup.show();
+    // for (const Prompt& p : prompts) {
+    //     qDebug() << "ID:" << p.getId()
+    //     << "| Level:" << p.getLevel()
+    //     << "| Prompt:" << QString::fromStdString(p.getPrompt())
+    //     << "| Answer:" << QString::fromStdString(p.getAnswer());
+    // }
+
+    // Prompt testPrompt(
+    //     "What is the capital of France?",
+    //     "Paris"
+    //     );
+
+    // Popup popup(testPrompt);
+    // popup.show();
 
     return app.exec();
 }

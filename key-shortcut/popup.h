@@ -1,13 +1,7 @@
 #ifndef POPUP_H
 #define POPUP_H
 
-#include <QDialog>
 #include <QMainWindow>
-#include <QKeySequence>
-#include <QKeyEvent>
-#include <QLabel>
-#include <QPushButton>
-
 #include "prompt.h"
 
 namespace Ui {
@@ -18,18 +12,26 @@ class Popup : public QMainWindow
 {
     Q_OBJECT
 
-private:
-    Prompt prompt;
-    Ui::PopupWindow *ui;
+public:
+    explicit Popup(const Prompt& prompt,
+                   QWidget* parent = nullptr);
+    ~Popup();
+
+    void setPrompt(const Prompt& prompt);
+
+signals:
+    void answered(int promptId, bool correct);
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private slots:
     void checkAnswer();
 
-public:
-    explicit Popup(const Prompt& prompt,
-                   QWidget* parent = nullptr);
-
-    ~Popup();
+private:
+    Prompt prompt;
+    Ui::PopupWindow* ui;
+    bool answerSubmitted = false;
 };
 
-#endif // POPUP_H
+#endif
