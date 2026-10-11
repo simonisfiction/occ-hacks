@@ -1,28 +1,48 @@
 #ifndef PROMPTSCHEDULER_H
 #define PROMPTSCHEDULER_H
 
-// #include <QObject>
-// #include <QTimer>
-// #include <vector>
-// #include "prompt.h"
+#include "database.h"
+#include "prompt.h"
 
-// class PromptScheduler : public QObject
-// {
-//     Q_OBJECT
+#include <QList>
+#include <chrono>
+#include <optional>
 
-// public:
-//     explicit PromptScheduler(QObject *parent = nullptr);
+class PromptScheduler
+{
+public:
+    explicit PromptScheduler(Database& database);
 
-//     void start();
+    // Reload prompts from the database.
+    void reload();
 
-// private slots:
-//     void showNextPrompt();
+    // Return the next due prompt, or std::nullopt if none is due.
+    // A returned prompt is marked as awaiting an answer.
+    std::optional<Prompt> takeNextDuePrompt();
 
-// private:
-//     QTimer timer;
-//     std::vector<Prompt> prompts;
+    // Update a prompt after the employee answers.
+    bool markCorrect(int id);
+    bool markIncorrect(int id);
 
-//     void scheduleNextPrompt();
-// };
+    // Time until the next available prompt is due.
+    // Returns milliseconds::max() if no prompt is available.
+    std::chrono::milliseconds timeUntilNextPrompt() const;
+
+private:
+    using Clock = std::chrono::steady_clock;
+
+    struct ScheduledPrompt
+    {
+        Prompt prompt;
+        Clock::time_point nextDue;
+        bool awaitingAnswer;
+    };
+
+    Database& database;
+    QList<ScheduledPrompt> scheduledPrompts;
+
+    static Clock::duration intervalForLevel(int level);
+
+};
 
 #endif // PROMPTSCHEDULER_H

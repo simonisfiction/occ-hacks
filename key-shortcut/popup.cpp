@@ -18,7 +18,7 @@ Popup::Popup(const Prompt& prompt, QWidget* parent)
     setWindowTitle("Prompt");
 
     ui->promptLabel->setText(
-        QString::fromStdString(prompt.getQuestion()));
+        QString::fromStdString(prompt.getPrompt()));
 
     ui->feedbackLabel->clear();
     ui->answerLineEdit->setFocus();

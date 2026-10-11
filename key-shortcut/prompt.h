@@ -1,3 +1,4 @@
+
 #ifndef PROMPT_H
 #define PROMPT_H
 
@@ -6,15 +7,26 @@
 class Prompt
 {
 private:
-    std::string question;
+    std::string prompt;
     std::string answer;
+    int level;
+    int id;
 
 public:
-    Prompt(const std::string& question,
+    // Create a new prompt
+    Prompt(const std::string& prompt,
            const std::string& answer);
 
-    std::string getQuestion() const;
-    std::string getAnswer() const;
+    // Reconstruct a prompt retrieved from the database
+    Prompt(const std::string& prompt,
+           const std::string& answer,
+           int level,
+           int id);
+
+    int getId() const;
+    int getLevel() const;
+    const std::string& getPrompt() const;
+    const std::string& getAnswer() const;
 };
 
-#endif // PROMPT_H
+#endif
