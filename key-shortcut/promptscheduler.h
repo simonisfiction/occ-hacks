@@ -15,6 +15,7 @@ public:
 
     bool markCorrect(int id);
     bool markIncorrect(int id);
+    bool hasActivePrompt() const { return activePromptId.has_value(); }
 
     std::chrono::milliseconds timeUntilNextPrompt() const;
 

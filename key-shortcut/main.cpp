@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     controller.start();
 
     // Show Admin Panel on application launch
-    MainWindow mainWindow;
+    MainWindow mainWindow(scheduler);
     mainWindow.show();
 
     return app.exec();

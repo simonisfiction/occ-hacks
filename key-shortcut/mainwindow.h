@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <QPoint>
 #include "database.h"
+#include "promptscheduler.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,7 +16,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(PromptScheduler& scheduler, QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -27,6 +28,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Database db;
+    PromptScheduler& scheduler;
 
     void loadPrompts();
 };

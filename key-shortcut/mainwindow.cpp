@@ -5,9 +5,10 @@
 #include <QMenu>
 #include <QMessageBox>
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(PromptScheduler& scheduler, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , scheduler(scheduler)
 {
     ui->setupUi(this);
     setWindowTitle("Space Cards");
@@ -95,26 +96,51 @@ void MainWindow::showContextMenu(const QPoint &pos)
 // Handles prompt deletion
 void MainWindow::deleteSelectedPrompt()
 {
+    // 1. Block deletion if a popup prompt is currently active on screen
+    if (scheduler.hasActivePrompt()) {
+        QMessageBox warningBox(
+            QMessageBox::Warning,
+            "Action Blocked",
+            "Cannot delete prompts while a popup is currently active. Please answer or close the popup first.",
+            QMessageBox::Ok,
+            this
+            );
+        warningBox.setWindowFlags(warningBox.windowFlags() | Qt::WindowStaysOnTopHint);
+        warningBox.exec();
+        return;
+    }
+
     QListWidgetItem *item = ui->promptList->currentItem();
     if (!item) {
         return;
     }
 
-    // Extract the stored primary key ID
     int promptId = item->data(Qt::UserRole).toInt();
 
-    QMessageBox::StandardButton confirm = QMessageBox::question(
-        this,
+    // 2. Confirmation dialog configured to stay on top of all windows
+    QMessageBox confirmBox(
+        QMessageBox::Question,
         "Confirm Delete",
         "Are you sure you want to delete this prompt?",
-        QMessageBox::Yes | QMessageBox::No
+        QMessageBox::Yes | QMessageBox::No,
+        this
         );
+    confirmBox.setDefaultButton(QMessageBox::No);
+    confirmBox.setWindowFlags(confirmBox.windowFlags() | Qt::WindowStaysOnTopHint);
 
-    if (confirm == QMessageBox::Yes) {
+    if (confirmBox.exec() == QMessageBox::Yes) {
         if (db.deletePrompt(promptId)) {
-            delete item; // Remove row item directly from widget
+            delete item; // Remove item directly from QListWidget
         } else {
-            QMessageBox::critical(this, "Error", "Failed to delete prompt from database.");
+            QMessageBox errorBox(
+                QMessageBox::Critical,
+                "Error",
+                "Failed to delete prompt from database.",
+                QMessageBox::Ok,
+                this
+                );
+            errorBox.setWindowFlags(errorBox.windowFlags() | Qt::WindowStaysOnTopHint);
+            errorBox.exec();
         }
     }
 }
