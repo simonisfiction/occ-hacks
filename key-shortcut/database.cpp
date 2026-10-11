@@ -1,4 +1,3 @@
-
 #include "database.h"
 
 #include <QSqlQuery>
@@ -66,7 +65,7 @@ void Database::close()
     }
 }
 
-// Create the prompts table
+// Create the prompts table (with auto-migration for missing next_due column)
 bool Database::createTables()
 {
     QSqlQuery query(db);
@@ -74,10 +73,10 @@ bool Database::createTables()
     QString sql = R"(
         CREATE TABLE IF NOT EXISTS prompts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            level INTEGER NOT NULL DEFAuLT 1,
+            level INTEGER NOT NULL DEFAULT 1,
             prompt TEXT NOT NULL,
             answer TEXT NOT NULL,
-            next_due INTEGER NOT NULL
+            next_due INTEGER NOT NULL DEFAULT 0
         )
     )";
 
@@ -85,6 +84,26 @@ bool Database::createTables()
         qWarning() << "Table creation failed:"
                    << query.lastError().text();
         return false;
+    }
+
+    // Check if next_due column exists in older database files on disk
+    QSqlQuery checkQuery("PRAGMA table_info(prompts)", db);
+    bool hasNextDue = false;
+    while (checkQuery.next()) {
+        if (checkQuery.value("name").toString() == "next_due") {
+            hasNextDue = true;
+            break;
+        }
+    }
+
+    // If table existed previously without next_due, alter table to add it
+    if (!hasNextDue) {
+        qDebug() << "Migrating database: adding missing 'next_due' column...";
+        QSqlQuery alterQuery(db);
+        if (!alterQuery.exec("ALTER TABLE prompts ADD COLUMN next_due INTEGER NOT NULL DEFAULT 0")) {
+            qWarning() << "Failed to migrate database table:" << alterQuery.lastError().text();
+            return false;
+        }
     }
 
     return true;
@@ -100,12 +119,18 @@ bool Database::addPrompt(const Prompt& prompt)
         "VALUES (:level, :prompt, :answer, :next_due)"
         );
 
+    // Ensure next_due has a valid timestamp (defaults to current time if 0)
+    qint64 dueTimestamp = prompt.getNextDue();
+    if (dueTimestamp <= 0) {
+        dueTimestamp = QDateTime::currentMSecsSinceEpoch();
+    }
+
     query.bindValue(":level", prompt.getLevel());
     query.bindValue(":prompt",
                     QString::fromStdString(prompt.getPrompt()));
     query.bindValue(":answer",
                     QString::fromStdString(prompt.getAnswer()));
-    query.bindValue(":next_due", prompt.getNextDue());
+    query.bindValue(":next_due", dueTimestamp);
 
     if (!query.exec()) {
         qWarning() << "Insert failed:" << query.lastError().text();
