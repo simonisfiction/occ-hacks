@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "prompt.h"
-
+#include <QApplication>
 #include <QMenu>
 #include <QMessageBox>
 
@@ -116,4 +116,9 @@ void MainWindow::deleteSelectedPrompt()
             QMessageBox::critical(this, "Error", "Failed to delete prompt from database.");
         }
     }
+}
+
+void MainWindow::on_btnTerminate_clicked()
+{
+    QApplication::quit();
 }

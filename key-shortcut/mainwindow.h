@@ -22,6 +22,7 @@ private slots:
     void on_btnAdd_clicked();
     void showContextMenu(const QPoint &pos);
     void deleteSelectedPrompt();
+    void on_btnTerminate_clicked();
 
 private:
     Ui::MainWindow *ui;
