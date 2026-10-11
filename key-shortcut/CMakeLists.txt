@@ -28,12 +28,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         popup.h
         popup.cpp
         prompt.h
-        popup.ui
+
 
         prompt.cpp
         database.h
         database.cpp
         promptscheduler.h promptscheduler.cpp
+        popupwindow.ui
     )
 else()
     if(ANDROID)
