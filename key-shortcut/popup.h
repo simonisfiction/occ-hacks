@@ -5,7 +5,7 @@
 #include "prompt.h"
 
 namespace Ui {
-class MainWindow;
+class PopupWindow;
 }
 
 class Popup : public QMainWindow
@@ -14,7 +14,7 @@ class Popup : public QMainWindow
 
 private:
     Prompt prompt;
-    Ui::MainWindow *ui;
+    Ui::PopupWindow *ui;
 
 private slots:
     void checkAnswer();
