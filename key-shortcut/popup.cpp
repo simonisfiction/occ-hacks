@@ -1,5 +1,5 @@
 #include "popup.h"
-#include "ui_mainwindow.h"
+#include "ui_popupwindow.h"
 
 #include <QLineEdit>
 #include <QLabel>
@@ -10,7 +10,7 @@
 Popup::Popup(const Prompt& prompt, QWidget* parent)
     : QMainWindow(parent),
     prompt(prompt),
-    ui(new Ui::MainWindow)
+    ui(new Ui::PopupWindow)
 {
     ui->setupUi(this);
 
