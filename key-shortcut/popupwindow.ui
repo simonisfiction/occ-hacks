@@ -26,6 +26,9 @@
     <property name="text">
      <string>promptLabel</string>
     </property>
+    <property name="wordWrap">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QLineEdit" name="answerLineEdit">
     <property name="geometry">

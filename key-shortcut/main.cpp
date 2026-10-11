@@ -28,39 +28,16 @@ int main(int argc, char *argv[])
     // Insert sample prompts if DB is brand new
     if (db.getAllPrompts().isEmpty()) {
         Prompt p1("Copy selected text", "Ctrl+C");
+        Prompt p2("Paste copied text", "Ctrl+V");
+        Prompt p3("Cut selected text", "Ctrl+X");
+        Prompt p4("Undo the last action", "Ctrl+Z");
+        Prompt p5("Save the current document", "Ctrl+S");
 
-        // Prompt p2("Paste copied text", "Ctrl+V");
-        // Prompt p3("Cut selected text", "Ctrl+X");
-        // Prompt p4("Undo the last action", "Ctrl+Z");
-        // Prompt p5("Save the current document", "Ctrl+S");
-        if (db.addPrompt(p1)) {
-            qDebug() << "Prompt inserted successfully!";
-        } else {
-            qWarning() << "Failed to insert prompt!";
-        }
-        // if (db.addPrompt(p2)) {
-        //     qDebug() << "Prompt inserted successfully!";
-        // } else {
-        //     qWarning() << "Failed to insert prompt!";
-        // }
-        // if (db.addPrompt(p3)) {
-        //     qDebug() << "Prompt inserted successfully!";
-        // } else {
-        //     qWarning() << "Failed to insert prompt!";
-        // }
-        // if (db.addPrompt(p4)) {
-        //     qDebug() << "Prompt inserted successfully!";
-        // } else {
-        //     qWarning() << "Failed to insert prompt!";
-        // }
-        // if (db.addPrompt(p5)) {
-        //     qDebug() << "Prompt inserted successfully!";
-        // } else {
-        //     qWarning() << "Failed to insert prompt!";
-        // }
-
-
-
+        db.addPrompt(p1);
+        db.addPrompt(p2);
+        db.addPrompt(p3);
+        db.addPrompt(p4);
+        db.addPrompt(p5);
 
         qDebug() << "Inserted sample prompts.";
     }
